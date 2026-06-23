@@ -77,7 +77,11 @@ $(BUILD_DIR)/%.o: %.c $(IMPORTED)
 	$(CC) -c $(CFLAGS) -I src/decomp/include -o $@ $<
 
 $(LIB_FILE): $(O_FILES)
+ifdef WINDOWS_BUILD
+	$(CC) $(LDFLAGS) -o $@ $^ -Wl,--out-implib,$(DIST_DIR)/sm64.lib
+else
 	$(CC) $(LDFLAGS) -o $@ $^
+endif
 endif
 
 $(LIB_H_FILE): src/libsm64.h

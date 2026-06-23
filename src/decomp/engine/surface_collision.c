@@ -1,6 +1,10 @@
 #include "../shim.h"
 #include "surface_collision.h"
 #include "../include/surface_terrains.h"
+
+// Surfaces whose |normal.y| exceeds this are floors/ceilings, not walls.
+// Increase this value to allow more sloped surfaces to register as kickable walls.
+#define WALL_SURFACE_NORMAL_Y_CUTOFF 0.01f
 #include "../../load_surfaces.h"
 #include "../include/sm64.h"
 #include "../game/object_stuff.h"
@@ -177,7 +181,7 @@ static s32 find_wall_collisions_from_list( struct SM64WallCollisionData *data) {
         if( !surf->isValid ) continue;
 
         // Do the check normally done in add_surface_to_cell
-        if( surf->normal.y < -0.01f || surf->normal.y > 0.01f ) continue;
+        if( surf->normal.y < -WALL_SURFACE_NORMAL_Y_CUTOFF || surf->normal.y > WALL_SURFACE_NORMAL_Y_CUTOFF ) continue;
 
         if( surf->normal.x < -0.707f || surf->normal.x > 0.707f ) {
             surf->flags |= SURFACE_FLAG_X_PROJECTION;

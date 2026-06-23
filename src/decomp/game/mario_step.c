@@ -1,6 +1,11 @@
 #include "../shim.h"
 #include "../include/sm64.h"
 #include "../engine/math_util.h"
+
+// Wall normal must differ from Mario's facing angle by more than this (s16) to
+// register as AIR_STEP_HIT_WALL and open a wall-kick window.
+// 0x6000 ≈ ±135°. Lower this value to allow more glancing wall contacts to count.
+#define WALL_KICK_ANGLE_THRESHOLD 0x6000
 #include "../engine/surface_collision.h"
 #include "mario.h"
 //#include "audio/external.h"
@@ -492,7 +497,7 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
             return AIR_STEP_HIT_LAVA_WALL;
         }
 
-        if (wallDYaw < -0x6000 || wallDYaw > 0x6000) {
+        if (wallDYaw < -WALL_KICK_ANGLE_THRESHOLD || wallDYaw > WALL_KICK_ANGLE_THRESHOLD) {
             m->flags |= MARIO_UNKNOWN_30;
             return AIR_STEP_HIT_WALL;
         }

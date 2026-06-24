@@ -51,7 +51,10 @@ else ifdef MACOS_BUILD
   LIB_FILE := $(DIST_DIR)/libsm64.dylib
 endif
 
-DUMMY := $(shell mkdir -p $(ALL_DIRS) build/test build/test/gl33core build/test/gl20 src/decomp/mario $(DIST_DIR)/include)
+DUMMY := $(shell mkdir -p $(ALL_DIRS) build/test build/test/gl33core build/test/gl20 src/decomp/mario $(DIST_DIR)/include $(DIST_DIR)/include/decomp $(DIST_DIR)/include/decomp/PR)
+
+DECOMP_H_DIST     := $(patsubst src/decomp/include/%.h,$(DIST_DIR)/include/decomp/%.h,$(wildcard src/decomp/include/*.h))
+DECOMP_H_DIST_PR  := $(patsubst src/decomp/include/PR/%.h,$(DIST_DIR)/include/decomp/PR/%.h,$(wildcard src/decomp/include/PR/*.h))
 
 $(filter-out src/decomp/mario/geo.inc.c,$(IMPORTED)): src/decomp/mario/geo.inc.c
 src/decomp/mario/geo.inc.c: ./import-mario-geo.py
@@ -87,6 +90,12 @@ endif
 $(LIB_H_FILE): src/libsm64.h
 	cp -f $< $@
 
+$(DIST_DIR)/include/decomp/%.h: src/decomp/include/%.h
+	cp -f $< $@
+
+$(DIST_DIR)/include/decomp/PR/%.h: src/decomp/include/PR/%.h
+	cp -f $< $@
+
 test/level.c: ./import-test-collision.py
 	./import-test-collision.py
 
@@ -109,7 +118,7 @@ else
 	$(CC) -o $@ $(TEST_OBJS) $(LIB_FILE) -lGLEW -lGL -lSDL2 -lSDL2main -lm -lpthread
 endif
 
-lib: $(LIB_FILE) $(LIB_H_FILE)
+lib: $(LIB_FILE) $(LIB_H_FILE) $(DECOMP_H_DIST) $(DECOMP_H_DIST_PR)
 
 test: $(TEST_FILE) $(LIB_H_FILE)
 

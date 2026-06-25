@@ -1423,6 +1423,10 @@ void update_mario_inputs(struct MarioState *m) {
     if (m->doubleJumpTimer > 0) {
         m->doubleJumpTimer--;
     }
+
+    if (m->glancingWallKickTimer > 0) {
+        m->glancingWallKickTimer--;
+    }
 }
 
 /**

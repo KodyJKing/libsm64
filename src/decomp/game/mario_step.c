@@ -6,7 +6,7 @@
 // register as AIR_STEP_HIT_WALL and open a wall-kick window.
 // 0x6000 ≈ ±135°. Lower this value to allow more glancing wall contacts to count.
 // Todo: Introduce notion of "glancing wall kicks" so Mario doesn't have to bonk walls at glancing angles for a wall kick opportunity.
-#define WALL_KICK_ANGLE_THRESHOLD 0x4000
+#define WALL_KICK_ANGLE_THRESHOLD 0x6000
 #include "../engine/surface_collision.h"
 #include "mario.h"
 //#include "audio/external.h"
@@ -504,6 +504,9 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
         if (wallDYaw < -WALL_KICK_ANGLE_THRESHOLD || wallDYaw > WALL_KICK_ANGLE_THRESHOLD) {
             m->flags |= MARIO_UNKNOWN_30;
             return AIR_STEP_HIT_WALL;
+        } else if (m->forwardVel > 20.0f) {
+            m->glancingWallKickTimer = 10;
+            return AIR_STEP_NONE;
         }
     }
 

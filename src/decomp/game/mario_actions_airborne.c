@@ -1159,6 +1159,22 @@ s32 check_wall_kick(struct MarioState *m) {
     return FALSE;
 }
 
+s32 check_glancing_wall_kick(struct MarioState *m) {
+    if ((m->input & INPUT_A_PRESSED) && m->glancingWallKickTimer != 0) {
+        m->glancingWallKickTimer = 0;
+        // Only reflect when still referencing the glanced wall. If contact was
+        // lost earlier in the window, m->wall is NULL and mario_bonk_reflection
+        // would spin Mario 180° and play a bonk-miss sound — kick straight ahead
+        // instead.
+        if (m->wall != NULL) {
+            mario_bonk_reflection(m, FALSE);
+        }
+        return set_mario_action(m, ACT_WALL_KICK_AIR, 0);
+    }
+
+    return FALSE;
+}
+
 s32 act_backward_air_kb(struct MarioState *m) {
     if (check_wall_kick(m)) {
         return TRUE;
@@ -2125,6 +2141,8 @@ s32 mario_execute_airborne_action(struct MarioState *m) {
         case ACT_VERTICAL_WIND:        cancel = act_vertical_wind(m);        break;
     }
     /* clang-format on */
+
+    cancel = check_glancing_wall_kick(m) || cancel;
 
     return cancel;
 }

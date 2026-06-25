@@ -79,5 +79,8 @@ s32 anim_spline_poll(Vec3f result);
 void linear_mtxf_mul_vec3f(Mat4 m, Vec3f dst, Vec3f v);
 void linear_mtxf_transpose_mul_vec3f(Mat4 m, Vec3f dst, Vec3f v);
 
+void aabb_init(struct AABB *aabb, f32 x, f32 y, f32 z);
+void aabb_update(struct AABB *aabb, f32 x, f32 y, f32 z);
+u32 aabb_intersect(struct AABB *a, struct AABB *b);
 
 #endif // MATH_UTIL_H

@@ -21,4 +21,6 @@ f32 find_floor(f32 xPos, f32 yPos, f32 zPos, struct SM64SurfaceCollisionData **p
 f32 find_water_level(f32 x, f32 z);
 f32 find_poison_gas_level(f32 x, f32 z);
 
+s32 find_surface_intersection(Vec3f lineStart, Vec3f lineEnd, f32 *t);
+
 #endif // SURFACE_COLLISION_H

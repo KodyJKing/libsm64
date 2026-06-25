@@ -1,5 +1,13 @@
 #include <math.h>
 
+// Number of frames after hitting a wall that Mario can press A to wall kick.
+// Vanilla: 2 (effectively 1 due to a missing-return UB). AVOID_UB must be defined.
+#define WALL_KICK_PRIMARY_WINDOW 6
+
+// Frames the wall-kick window stays open while in the post-bonk knockback state.
+// Vanilla: 5.
+#define WALL_KICK_SECONDARY_WINDOW 8
+
 #include "../include/PR/ultratypes.h"
 #include "../shim.h"
 
@@ -1309,14 +1317,14 @@ s32 act_air_hit_wall(struct MarioState *m) {
         mario_drop_held_object(m);
     }
 
-    if (++(m->actionTimer) <= 2) {
+    if (++(m->actionTimer) <= WALL_KICK_PRIMARY_WINDOW) {
         if (m->input & INPUT_A_PRESSED) {
             m->vel[1] = 52.0f;
             m->faceAngle[1] += 0x8000;
             return set_mario_action(m, ACT_WALL_KICK_AIR, 0);
         }
     } else if (m->forwardVel >= 38.0f) {
-        m->wallKickTimer = 5;
+        m->wallKickTimer = WALL_KICK_SECONDARY_WINDOW;
         if (m->vel[1] > 0.0f) {
             m->vel[1] = 0.0f;
         }
@@ -1324,7 +1332,7 @@ s32 act_air_hit_wall(struct MarioState *m) {
         m->particleFlags |= PARTICLE_VERTICAL_STAR;
         return set_mario_action(m, ACT_BACKWARD_AIR_KB, 0);
     } else {
-        m->wallKickTimer = 5;
+        m->wallKickTimer = WALL_KICK_SECONDARY_WINDOW;
         if (m->vel[1] > 0.0f) {
             m->vel[1] = 0.0f;
         }

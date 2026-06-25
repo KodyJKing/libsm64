@@ -5,7 +5,8 @@
 // Wall normal must differ from Mario's facing angle by more than this (s16) to
 // register as AIR_STEP_HIT_WALL and open a wall-kick window.
 // 0x6000 ≈ ±135°. Lower this value to allow more glancing wall contacts to count.
-#define WALL_KICK_ANGLE_THRESHOLD 0x6000
+// Todo: Introduce notion of "glancing wall kicks" so Mario doesn't have to bonk walls at glancing angles for a wall kick opportunity.
+#define WALL_KICK_ANGLE_THRESHOLD 0x4000
 #include "../engine/surface_collision.h"
 #include "mario.h"
 //#include "audio/external.h"
@@ -434,7 +435,10 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
     }
 
     //! This check uses f32, but findFloor uses short (overflow jumps)
-    if (nextPos[1] <= floorHeight) {
+    // Don't land if the floor is the same surface as the wall — sloped surfaces
+    // with 0.01 < normal.y < WALL_SURFACE_NORMAL_Y_CUTOFF are classified as both.
+    // Prioritize the wall hit so wall-kick windows open correctly.
+    if (nextPos[1] <= floorHeight && floor != upperWall && floor != lowerWall) {
         if (ceilHeight - floorHeight > 160.0f) {
             m->pos[0] = nextPos[0];
             m->pos[2] = nextPos[2];

@@ -2347,3 +2347,25 @@ void linear_mtxf_transpose_mul_vec3f(Mat4 m, Vec3f dst, Vec3f v) {
         dst[i] = m[i][0] * v[0] + m[i][1] * v[1] + m[i][2] * v[2];
     }
 }
+
+void aabb_init(struct AABB *aabb, f32 x, f32 y, f32 z) {
+    aabb->min[0] = x;
+    aabb->min[1] = y;
+    aabb->min[2] = z;
+    aabb->max[0] = x;
+    aabb->max[1] = y;
+    aabb->max[2] = z;
+}
+void aabb_update(struct AABB *aabb, f32 x, f32 y, f32 z) {
+    aabb->min[0] = min(aabb->min[0], x);
+    aabb->min[1] = min(aabb->min[1], y);
+    aabb->min[2] = min(aabb->min[2], z);
+    aabb->max[0] = max(aabb->max[0], x);
+    aabb->max[1] = max(aabb->max[1], y);
+    aabb->max[2] = max(aabb->max[2], z);
+}
+u32 aabb_intersect(struct AABB *a, struct AABB *b) {
+    return (a->min[0] <= b->max[0] && a->max[0] >= b->min[0]) &&
+           (a->min[1] <= b->max[1] && a->max[1] >= b->min[1]) &&
+           (a->min[2] <= b->max[2] && a->max[2] >= b->min[2]);
+}

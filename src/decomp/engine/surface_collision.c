@@ -4,10 +4,11 @@
 
 // Surfaces whose |normal.y| exceeds this are floors/ceilings, not walls.
 // Increase this value to allow more sloped surfaces to register as kickable walls.
-#define WALL_SURFACE_NORMAL_Y_CUTOFF 0.01f
+#define WALL_SURFACE_NORMAL_Y_CUTOFF 0.2f
 #include "../../load_surfaces.h"
 #include "../include/sm64.h"
 #include "../game/object_stuff.h"
+#include "math_util.h"
 
 /**
  * Iterate through the list of ceilings and find the first ceiling over a given point.
@@ -296,6 +297,10 @@ static s32 find_wall_collisions_from_list( struct SM64WallCollisionData *data) {
 
 s32 f32_find_wall_collision(f32 *xPtr, f32 *yPtr, f32 *zPtr, f32 offsetY, f32 radius)
 {
+    const f32 traceHeight = 120.0f; // Inside Mario's head.
+    
+    Vec3f from = {*xPtr, *yPtr + traceHeight, *zPtr};
+    
     struct SM64WallCollisionData collision;
     s32 numCollisions = 0;
 
@@ -309,6 +314,23 @@ s32 f32_find_wall_collision(f32 *xPtr, f32 *yPtr, f32 *zPtr, f32 offsetY, f32 ra
     collision.numWalls = 0;
 
     numCollisions = find_wall_collisions(&collision);
+
+    Vec3f to = {collision.x, collision.y + traceHeight, collision.z};
+    // Check for surface intersections.
+    float t = 0.0f;
+    if (find_surface_intersection(from, to, &t)) {
+        float dx = to[0] - from[0];
+        float dy = to[1] - from[1];
+        float dz = to[2] - from[2];
+
+        // Step back a bit to avoid getting stuck due to floating point precision errors.
+        const float clipRepulsion = 0.1f;
+        *xPtr -= dx * clipRepulsion;
+        *yPtr -= dy * clipRepulsion;
+        *zPtr -= dz * clipRepulsion;
+
+        return numCollisions;
+    }
 
     *xPtr = collision.x;
     *yPtr = collision.y;
@@ -385,4 +407,110 @@ f32 find_water_level(f32 x, f32 z)
 f32 find_poison_gas_level(f32 x, f32 z)
 {
 	return -10000.0f;
+}
+
+s32 line_intersect_surface(Vec3f lineStart, Vec3f lineEnd,
+                          struct SM64SurfaceCollisionData *surface,
+                          f32 *t) {
+    Vec3f rayDir = {lineEnd[0] - lineStart[0], lineEnd[1] - lineStart[1], lineEnd[2] - lineStart[2]};
+
+    // Moller-Trumbore algorithm
+    Vec3f edge1 = {
+        surface->vertex2[0] - surface->vertex1[0],
+        surface->vertex2[1] - surface->vertex1[1],
+        surface->vertex2[2] - surface->vertex1[2]
+    };
+    Vec3f edge2 = {
+        surface->vertex3[0] - surface->vertex1[0],
+        surface->vertex3[1] - surface->vertex1[1],
+        surface->vertex3[2] - surface->vertex1[2]
+    };
+
+    // h = rayDir x edge2
+    Vec3f h = {
+        rayDir[1] * edge2[2] - rayDir[2] * edge2[1],
+        rayDir[2] * edge2[0] - rayDir[0] * edge2[2],
+        rayDir[0] * edge2[1] - rayDir[1] * edge2[0]
+    };
+
+    f32 a = edge1[0] * h[0] + edge1[1] * h[1] + edge1[2] * h[2];
+
+    if (a > -1e-6f && a < 1e-6f) {
+        return 0; // Ray is parallel to triangle
+    }
+
+    f32 f = 1.0f / a;
+    Vec3f s = {
+        lineStart[0] - surface->vertex1[0],
+        lineStart[1] - surface->vertex1[1],
+        lineStart[2] - surface->vertex1[2]
+    };
+
+    f32 u = f * (s[0] * h[0] + s[1] * h[1] + s[2] * h[2]);
+    if (u < 0.0f || u > 1.0f) {
+        return 0;
+    }
+
+    // q = s x edge1
+    Vec3f q = {
+        s[1] * edge1[2] - s[2] * edge1[1],
+        s[2] * edge1[0] - s[0] * edge1[2],
+        s[0] * edge1[1] - s[1] * edge1[0]
+    };
+
+    f32 v = f * (rayDir[0] * q[0] + rayDir[1] * q[1] + rayDir[2] * q[2]);
+    if (v < 0.0f || u + v > 1.0f) {
+        return 0;
+    }
+
+    f32 tVal = f * (edge2[0] * q[0] + edge2[1] * q[1] + edge2[2] * q[2]);
+    if (tVal < 0.0f || tVal > 1.0f) {
+        return 0; // Intersection outside line segment bounds
+    }
+
+    *t = tVal;
+    return 1;
+}
+
+/**
+ * Does a line segment intersection check against all surfaces (floor, ceiling, walls)
+ * @param lineStart The starting point of the line segment.
+ * @param lineEnd The ending point of the line segment.
+ * @param t A pointer to a float where the intersection parameter will be stored if an intersection is found.
+ * @return 1 if an intersection is found, 0 otherwise.
+ * 
+ */
+s32 find_surface_intersection(Vec3f lineStart, Vec3f lineEnd, f32 *t) {
+    struct SM64SurfaceCollisionData *surf;
+
+    struct AABB lineBounds;
+    aabb_init(&lineBounds, lineStart[0], lineStart[1], lineStart[2]);
+    aabb_update(&lineBounds, lineEnd[0], lineEnd[1], lineEnd[2]);
+
+    struct AABB surfBounds;
+
+    u32 groupCount = loaded_surface_iter_group_count();
+    for (u32 i = 0; i < groupCount; i++) {
+        u32 surfCount = loaded_surface_iter_group_size(i);
+        for (u32 j = 0; j < surfCount; j++) {
+            surf = loaded_surface_iter_get_at_index(i, j);
+
+            if (surf->lowerY > lineBounds.max[1] || surf->upperY < lineBounds.min[1]) {
+                continue;
+            }
+            
+            aabb_init(&surfBounds, surf->vertex1[0], surf->vertex1[1], surf->vertex1[2]);
+            aabb_update(&surfBounds, surf->vertex2[0], surf->vertex2[1], surf->vertex2[2]);
+            aabb_update(&surfBounds, surf->vertex3[0], surf->vertex3[1], surf->vertex3[2]);
+            if (!aabb_intersect(&lineBounds, &surfBounds)) {
+                continue;
+            }
+
+            if (line_intersect_surface(lineStart, lineEnd, surf, t)) {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
 }

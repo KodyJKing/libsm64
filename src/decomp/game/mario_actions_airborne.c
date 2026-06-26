@@ -1160,12 +1160,13 @@ s32 check_wall_kick(struct MarioState *m) {
 }
 
 s32 check_glancing_wall_kick(struct MarioState *m) {
+    if (m->glancingWallKickCooldownTimer != 0) {
+        m->glancingWallKickCooldownTimer--;
+        return FALSE;
+    }
     if ((m->input & INPUT_A_PRESSED) && m->glancingWallKickTimer != 0) {
         m->glancingWallKickTimer = 0;
-        // Only reflect when still referencing the glanced wall. If contact was
-        // lost earlier in the window, m->wall is NULL and mario_bonk_reflection
-        // would spin Mario 180° and play a bonk-miss sound — kick straight ahead
-        // instead.
+        m->glancingWallKickCooldownTimer = 10;
         if (m->wall != NULL) {
             mario_bonk_reflection(m, FALSE);
         }

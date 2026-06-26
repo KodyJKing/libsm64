@@ -14,6 +14,17 @@
 #include "interaction.h"
 #include "mario_step.h"
 
+// #define DEBUG_MARIO_STEP 1
+//
+#ifdef DEBUG_MARIO_STEP
+#include "../../debug_print.h"
+#else
+#define DEBUG_PRINT( ... ) 
+#define DEBUG_LINE( x1, y1, z1, x2, y2, z2, color ) 
+#define DEBUG_POINT( x, y, z, color ) 
+#define DEBUG_WORLD_TEXT( x, y, z, color, text ) 
+#endif
+
 static s16 sMovingSandSpeeds[] = { 12, 8, 4, 0 };
 
 struct SM64SurfaceCollisionData gWaterSurfacePseudoFloor = {
@@ -269,6 +280,8 @@ static s32 perform_ground_quarter_step(struct MarioState *m, Vec3f nextPos) {
     f32 floorHeight;
     f32 waterLevel;
 
+    DEBUG_LINE(m->pos[0], m->pos[1], m->pos[2], nextPos[0], nextPos[1], nextPos[2], 0xFF00FFFF);
+
     lowerWall = resolve_and_return_wall_collisions(nextPos, 30.0f, 24.0f);
     upperWall = resolve_and_return_wall_collisions(nextPos, 60.0f, 50.0f);
 
@@ -402,6 +415,8 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
     f32 floorHeight;
     f32 waterLevel;
 
+    DEBUG_LINE(m->pos[0], m->pos[1], m->pos[2], intendedPos[0], intendedPos[1], intendedPos[2], 0x00FF00FF);
+
     vec3f_copy(nextPos, intendedPos);
 
     upperWall = resolve_and_return_wall_collisions(nextPos, 150.0f, 50.0f);
@@ -446,6 +461,8 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
             m->floorHeight = floorHeight;
         }
 
+        DEBUG_POINT(m->pos[0], m->pos[1], m->pos[2], 0xFFFFFFFF);
+
         //! When ceilHeight - floorHeight <= 160, the step result says that
         // Mario landed, but his movement is cancelled and his referenced floor
         // isn't updated (pedro spots)
@@ -478,15 +495,11 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
 
     //! When the wall is not completely vertical or there is a slight wall
     // misalignment, you can activate these conditions in unexpected situations
-    if ((stepArg & AIR_STEP_CHECK_LEDGE_GRAB) && upperWall == NULL && lowerWall != NULL) {
+    s32 checkLedge = (stepArg & AIR_STEP_CHECK_LEDGE_GRAB) && upperWall == NULL && lowerWall != NULL;
+    if (checkLedge) {
         if (check_ledge_grab(m, lowerWall, intendedPos, nextPos)) {
             return AIR_STEP_GRABBED_LEDGE;
         }
-
-        vec3f_copy(m->pos, nextPos);
-        m->floor = floor;
-        m->floorHeight = floorHeight;
-        return AIR_STEP_NONE;
     }
 
     vec3f_copy(m->pos, nextPos);
@@ -496,6 +509,8 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
     if (upperWall != NULL || lowerWall != NULL) {
         m->wall = upperWall != NULL ? upperWall : lowerWall;
         wallDYaw = atan2s(m->wall->normal.z, m->wall->normal.x) - m->faceAngle[1];
+
+        DEBUG_POINT(m->pos[0], m->pos[1], m->pos[2], 0xFF0000FF);
 
         if (m->wall->type == SURFACE_BURNING) {
             return AIR_STEP_HIT_LAVA_WALL;
@@ -508,6 +523,13 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
             m->glancingWallKickTimer = 10;
             return AIR_STEP_NONE;
         }
+    }
+
+    if (checkLedge) {
+        DEBUG_POINT(m->pos[0], m->pos[1], m->pos[2], 0x00FFFFFF);
+        vec3f_copy(m->pos, nextPos);
+        m->floor = floor;
+        m->floorHeight = floorHeight;
     }
 
     return AIR_STEP_NONE;

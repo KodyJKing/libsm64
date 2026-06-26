@@ -336,6 +336,7 @@ struct MarioState
     s32 gasLevel; // libsm64: added field
 
     u8 glancingWallKickTimer; // kjk.libsm64: added field
+    u8 glancingWallKickCooldownTimer; // kjk.libsm64: added field
 };
 
 #endif // TYPES_H

@@ -1077,8 +1077,10 @@ s32 act_crazy_box_bounce(struct MarioState *m) {
             if (m->actionArg < 2) {
                 set_mario_action(m, ACT_CRAZY_BOX_BOUNCE, m->actionArg + 1);
             } else {
-                m->heldObj->oInteractStatus = INT_STATUS_STOP_RIDING;
-                m->heldObj = NULL;
+                if (m->heldObj != NULL) {
+                    m->heldObj->oInteractStatus = INT_STATUS_STOP_RIDING;
+                    m->heldObj = NULL;
+                }
                 set_mario_action(m, ACT_STOMACH_SLIDE, 0);
             }
 #ifdef VERSION_SH

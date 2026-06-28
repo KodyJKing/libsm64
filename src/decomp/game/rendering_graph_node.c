@@ -15,6 +15,7 @@
 #include "../include/sm64.h"
 #include "../shim.h"
 #include "../../gfx_adapter.h"
+#include "../kjk/debug_mario_bones.h"
 
 
 
@@ -621,6 +622,8 @@ static void geo_process_animated_part(struct GraphNodeAnimatedPart *node) {
     gMatStackIndex++;
     mtxf_to_mtx(matrixPtr, gMatStack[gMatStackIndex]);
     gMatStackFixed[gMatStackIndex] = matrixPtr;
+    gfx_adapter_capture_bone(&gMatStack[gMatStackIndex]);
+    // draw_bone_frame();
     if (node->displayList != NULL) {
         geo_append_display_list(node->displayList, node->node.flags >> 8);
     }

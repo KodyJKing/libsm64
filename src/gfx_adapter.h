@@ -13,3 +13,5 @@ extern void gSPMatrix( void *pkt, Mtx *m, uint8_t flags );
 extern void gSPDisplayList( void *pkt, struct DisplayListNode *dl );
 
 extern void gfx_adapter_bind_output_buffers( struct SM64MarioGeometryBuffers *outBuffers );
+extern void gfx_adapter_bind_bone_output( struct SM64Matrix4f *outBoneMatrices );
+extern void gfx_adapter_capture_bone( Mat4 *m );

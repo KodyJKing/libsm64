@@ -215,3 +215,18 @@ void gfx_adapter_bind_output_buffers( struct SM64MarioGeometryBuffers *outBuffer
     s_uvPtr = s_outBuffers->uv;
     s_outBuffers->numTrianglesUsed = 0;
 }
+
+static struct SM64Matrix4f *s_boneOutput = NULL;
+static int s_boneIndex = 0;
+
+void gfx_adapter_bind_bone_output( struct SM64Matrix4f *outBoneMatrices )
+{
+    s_boneOutput = outBoneMatrices;
+    s_boneIndex = 0;
+}
+
+void gfx_adapter_capture_bone( Mat4 *m )
+{
+    if( s_boneOutput != NULL && s_boneIndex < SM64_MARIO_BONE_COUNT )
+        memcpy( s_boneOutput[s_boneIndex++].m, *m, sizeof(Mat4) );
+}

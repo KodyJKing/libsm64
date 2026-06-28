@@ -25,6 +25,11 @@
 extern "C" {
 #endif
 
+struct SM64Matrix4f
+{
+    float m[4][4];
+};
+
 struct SM64Surface
 {
     int16_t type;
@@ -138,6 +143,7 @@ enum
     SM64_TEXTURE_WIDTH = 64 * 11,
     SM64_TEXTURE_HEIGHT = 64,
     SM64_GEO_MAX_TRIANGLES = 1024,
+    SM64_MARIO_BONE_COUNT = 20,
 };
 
 typedef void (*SM64DebugPrintFunctionPtr)( const char * );
@@ -161,7 +167,7 @@ extern SM64_LIB_FN uint32_t sm64_audio_tick( uint32_t numQueuedSamples, uint32_t
 extern SM64_LIB_FN void sm64_static_surfaces_load( const struct SM64Surface *surfaceArray, uint32_t numSurfaces );
 
 extern SM64_LIB_FN int32_t sm64_mario_create( float x, float y, float z );
-extern SM64_LIB_FN void sm64_mario_tick( int32_t marioId, const struct SM64MarioInputs *inputs, struct SM64MarioState *outState, struct SM64MarioGeometryBuffers *outBuffers );
+extern SM64_LIB_FN void sm64_mario_tick( int32_t marioId, const struct SM64MarioInputs *inputs, struct SM64MarioState *outState, struct SM64MarioGeometryBuffers *outBuffers, struct SM64Matrix4f* outBoneMatrices );
 extern SM64_LIB_FN void sm64_mario_delete( int32_t marioId );
 
 extern SM64_LIB_FN void sm64_set_mario_action(int32_t marioId, uint32_t action);

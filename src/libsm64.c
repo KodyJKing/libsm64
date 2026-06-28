@@ -236,7 +236,7 @@ SM64_LIB_FN int32_t sm64_mario_create( float x, float y, float z )
     return marioIndex;
 }
 
-SM64_LIB_FN void sm64_mario_tick( int32_t marioId, const struct SM64MarioInputs *inputs, struct SM64MarioState *outState, struct SM64MarioGeometryBuffers *outBuffers )
+SM64_LIB_FN void sm64_mario_tick( int32_t marioId, const struct SM64MarioInputs *inputs, struct SM64MarioState *outState, struct SM64MarioGeometryBuffers *outBuffers, struct SM64Matrix4f *outBoneMatrices )
 {
     if( marioId >= s_mario_instance_pool.size || s_mario_instance_pool.objects[marioId] == NULL )
     {
@@ -265,6 +265,7 @@ SM64_LIB_FN void sm64_mario_tick( int32_t marioId, const struct SM64MarioInputs 
     update_mario_platform(); // TODO platform grabbed here and used next tick could be a use-after-free
 
     gfx_adapter_bind_output_buffers( outBuffers );
+    gfx_adapter_bind_bone_output( outBoneMatrices );
 
     geo_process_root_hack_single_node( s_mario_graph_node );
 

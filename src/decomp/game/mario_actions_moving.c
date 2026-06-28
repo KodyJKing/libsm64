@@ -50,8 +50,7 @@ struct LandingAction sHoldFreefallLandAction = {
 };
 
 struct LandingAction sLongJumpLandAction = {
-    // 6, 5, ACT_FREEFALL, ACT_LONG_JUMP_LAND_STOP, ACT_LONG_JUMP, ACT_FREEFALL, ACT_BEGIN_SLIDING,
-    6, 5, ACT_FREEFALL, ACT_LONG_JUMP_LAND_STOP, ACT_DOUBLE_JUMP, ACT_FREEFALL, ACT_BEGIN_SLIDING,
+    6, 5, ACT_FREEFALL, ACT_LONG_JUMP_LAND_STOP, ACT_LONG_JUMP, ACT_FREEFALL, ACT_BEGIN_SLIDING,
 };
 
 struct LandingAction sDoubleJumpLandAction = {

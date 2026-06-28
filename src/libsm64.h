@@ -142,11 +142,11 @@ enum
 
 typedef void (*SM64DebugPrintFunctionPtr)( const char * );
 extern SM64_LIB_FN void sm64_register_debug_print_function( SM64DebugPrintFunctionPtr debugPrintFunction );
-typedef void (*SM64DebugLineFunctionPtr)( float x1, float y1, float z1, float x2, float y2, float z2, uint32_t colorRGBA );
+typedef void (*SM64DebugLineFunctionPtr)( float x1, float y1, float z1, float x2, float y2, float z2, uint32_t colorRGBA, uint32_t durationFrames );
 extern SM64_LIB_FN void sm64_register_debug_line_function( SM64DebugLineFunctionPtr debugLineFunction );
-typedef void (*SM64DebugPointFunctionPtr)( float x, float y, float z, uint32_t colorRGBA );
+typedef void (*SM64DebugPointFunctionPtr)( float x, float y, float z, uint32_t colorRGBA, uint32_t durationFrames );
 extern SM64_LIB_FN void sm64_register_debug_point_function( SM64DebugPointFunctionPtr debugPointFunction );
-typedef void (*SM64DebugWorldTextFunctionPtr)( float x, float y, float z, uint32_t colorRGBA, const char * );
+typedef void (*SM64DebugWorldTextFunctionPtr)( float x, float y, float z, uint32_t colorRGBA, const char *, uint32_t durationFrames );
 extern SM64_LIB_FN void sm64_register_debug_world_text_function( SM64DebugWorldTextFunctionPtr debugWorldTextFunction );
 
 typedef void (*SM64PlaySoundFunctionPtr)( uint32_t soundBits, float *pos );

@@ -14,7 +14,7 @@
 #include "interaction.h"
 #include "mario_step.h"
 
-#define DEBUG_MARIO_STEP 1
+// #define DEBUG_MARIO_STEP 1
 //
 #ifdef DEBUG_MARIO_STEP
 #include "../../debug_print.h"

@@ -1175,6 +1175,8 @@ s32 check_glancing_wall_kick(struct MarioState *m) {
             play_sound((m->flags & MARIO_METAL_CAP) ? SOUND_ACTION_METAL_BONK : SOUND_ACTION_BONK,
                 m->marioObj->header.gfx.cameraToObject);
         }
+        
+        m->marioObj->header.gfx.animInfo.animFrame = 0;
         return set_mario_action(m, ACT_WALL_KICK_AIR, 0);
     }
 
